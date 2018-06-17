@@ -1,2 +1,2 @@
 # Samples
-sample code to help participants of the program
+Sample code for participants of Hunt The Wumpus program
