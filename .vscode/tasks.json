@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/wumpusv0/wumpusv0.csproj"
+                "${workspaceFolder}/wumpusv0/wump76.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

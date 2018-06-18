@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/wumpusv0/bin/Debug/netcoreapp2.1/wumpusv0.dll",
+            "program": "${workspaceFolder}/wump76/bin/Debug/netcoreapp2.1/wump76.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/wumpusv0",
+            "cwd": "${workspaceFolder}/wump76",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
             "stopAtEntry": false,
