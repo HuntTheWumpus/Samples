@@ -42,7 +42,7 @@ namespace wump76
 
                 Console.WriteLine();
                 Console.WriteLine("You are in room 1");
-                Console.WriteLine("Tunnels lead to 2\t3\t4");
+                Console.WriteLine("Tunnels lead to 2, 3, 4");
                 Console.WriteLine();
                 Console.Write("Shoot or Move (S-M)? ");  
             }
@@ -52,7 +52,7 @@ namespace wump76
         {
             try {
                 string answer=Console.ReadLine().ToLower();
-                Console.WriteLine("DEBUG: answer="+answer);
+                //Console.WriteLine("DEBUG: answer="+answer);
                 return answer;
                 
             } catch (Exception) {}
