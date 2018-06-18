@@ -687,11 +687,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\shlokb\\Samples\\wumpusv0\\wumpusv0.csproj",
-      "projectName": "wumpusv0",
-      "projectPath": "C:\\Users\\shlokb\\Samples\\wumpusv0\\wumpusv0.csproj",
+      "projectUniqueName": "C:\\Users\\shlokb\\Samples\\wump76\\wump76.csproj",
+      "projectName": "wump76",
+      "projectPath": "C:\\Users\\shlokb\\Samples\\wump76\\wump76.csproj",
       "packagesPath": "C:\\Users\\shlokb\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\shlokb\\Samples\\wumpusv0\\obj\\",
+      "outputPath": "C:\\Users\\shlokb\\Samples\\wump76\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
