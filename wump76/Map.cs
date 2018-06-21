@@ -9,6 +9,7 @@ namespace wump76
         private int _player;
         private int _bats;
         private int _pits;
+        public int MAX_ROOM; 
         
         public Map()
         {
@@ -26,6 +27,7 @@ namespace wump76
             _player = 0;
             _bats = 3;
             _pits = 5;
+            MAX_ROOM = _connections.Length-1;
         }
 
         public int GetPlayerLocation()
@@ -71,9 +73,19 @@ namespace wump76
 
         public bool MovePlayer(int room)
         {
-            if (room>=0 && room<_connections.Length)
+            if (room>=0 && room<=MAX_ROOM)
             {
                 _player = room;
+                return true;
+            }
+            return false;
+        }
+
+        public bool MoveWumpus(int room)
+        {
+            if (room>=0 && room<=MAX_ROOM)
+            {
+                _wumpus = room;
                 return true;
             }
             return false;

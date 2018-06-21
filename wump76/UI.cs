@@ -14,13 +14,64 @@ namespace wump76
                 Console.Read();
             }
             _gc = new GameControl();
+            _is_involuntary_move = false;
+        }
+
+        private void NewTurn()
+        {
+            Console.WriteLine();
         }
 
         private void ShowPlayerLocation()
         {
-            Console.WriteLine();
-            Console.WriteLine("You are in room "+_gc.map.GetPlayerLocation());
+            int loc = _gc.map.GetPlayerLocation();
+            Console.WriteLine("You are in room "+loc);
+        }
+        private void ShowBatMoveLocation()
+        {
+            int loc = _gc.map.GetPlayerLocation();
+            Console.WriteLine("Bats moved you to room "+loc);
+        }
+
+        private int IntearctWithRoom()
+        {
+            int loc = _gc.map.GetPlayerLocation();
+            int game_state = 0; // 0= game continues; -1=game lost; +1= game won; 
             
+            if (_gc.InteractWithBats(loc))
+            {
+                Console.WriteLine("ZAP! Suffer Bat Snatch! Elsewhereville for you!");
+                ShowBatMoveLocation();
+                game_state = IntearctWithRoom();
+
+                // exit out of function since we don't need to handle any other hazards in room player was moved out of
+                // game_state will depend on what happens in the new room player was moved involuntarily to
+                return game_state;
+            }
+            if (_gc.DoesRoomHavePit(loc))
+            {
+                Console.WriteLine("YYYIIIIEEEE... You fell in a pit!");
+                Console.WriteLine("Ha, Ha, Ha - You loose!");
+                game_state = -1;
+                return game_state;
+            }
+            if (_gc.map.IsWumpusInRoom(loc))
+            {
+                Console.WriteLine("You entered room with the Wunpus!");
+                if(_gc.DoesWumpusMove())
+                    Console.WriteLine("LUCKY! Wumpus was startled and moved to nearby room!");
+                else
+                {
+                    Console.WriteLine("He, He Wumpus food, You Loose!");
+                    game_state = -1;
+                } 
+                return game_state;
+            }
+            return game_state;
+        }
+
+        private void ShowConnectingRooms()
+        {
             string connection_string =  "Tunnels lead to ";
             int i=0;
             foreach (int room in _gc.map.GetConnectingRooms())
@@ -42,39 +93,56 @@ namespace wump76
                 Console.WriteLine("I smell a Wumpus!");
         }
         
+        private string GetUserAction()
+        {
+            ShowConnectingRooms();
+            ShowWarnings();
+            Console.Write("Shoot (S), Move (M) or Quit (Q)? ");
+            return GetInput();
+        }
+
+        private void ShowRoomState()
+        {
+
+        }
+
+        private void HandleMoveAction()
+        {
+            Console.Write("Where to? ");
+            int loc=Convert.ToInt32(GetInput());
+            while (!_gc.MovePlayer(loc))
+            {
+                Console.WriteLine("Cant move to "+loc+", try again");
+                Console.Write("Where to? ");
+                loc=Convert.ToInt32(GetInput());
+            }
+           
+        }
         public void Start() 
         {
             Console.WriteLine();
             Console.WriteLine("HUNT THE WUMPUS");
 
-            ShowPlayerLocation();
-            ShowWarnings();
-
-            Console.WriteLine();
-            Console.Write("Shoot or Move (S-M)? ");  
             while (1==1) {
-                string answer=GetInput();
-                if (answer=="quit")  
+                NewTurn();
+                ShowPlayerLocation();
+                
+                string answer;
+                if (_is_involuntary_move) answer="m";
+                else answer=GetUserAction();
+
+                if (answer=="q")
+                {  
+                    Console.WriteLine("HA - quitter! run along, then!");
                     break;
+                }
                 else if (answer=="m")
-                {
-                    Console.Write("Where to? ");
-                    int loc=Convert.ToInt32(GetInput());
-                    while (!_gc.MovePlayer(loc))
-                    {
-                        Console.WriteLine("Cant move to "+loc+", try again");
-                        Console.Write("Where to? ");
-                        loc=Convert.ToInt32(GetInput());
-                    }
-                }
+                    HandleMoveAction();
                 else 
-                {
                     Console.WriteLine("Can't do that, try again");
-                }
-                ShowPlayerLocation(); 
-                ShowWarnings();
-                Console.WriteLine();
-                Console.Write("Shoot or Move (S-M)? ");  
+                int game_state = IntearctWithRoom();
+                if (game_state!=0) // indicates game has been won or lost, so exit
+                    break;
             }
         }
 
@@ -82,7 +150,6 @@ namespace wump76
         {
             try {
                 string answer=Console.ReadLine().ToLower();
-                //Console.WriteLine("DEBUG: answer="+answer);
                 return answer;
                 
             } catch (Exception) {}
@@ -117,12 +184,9 @@ The Wumpus lives in a cave of 20 rooms. Each room has 3 tunnels leading to other
   When you are one room away from Wumpus or hazard, the computer says:
     WUMPUS - 'I smell a wumpus'
     BAT    - 'Bats nearby'
-    PIT    - 'I feel a draft'
-
-  QUIT:
-  Responding QUIT for any question will end the game immediately. 
-            ");
+    PIT    - 'I feel a draft'");
         }
         private GameControl _gc; // game controler
+        private bool _is_involuntary_move; // used to check if user was involuntarily moved to a new room by bats
     }
 }
