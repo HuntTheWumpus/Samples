@@ -14,7 +14,6 @@ namespace wump76
                 Console.Read();
             }
             _gc = new GameControl();
-            _is_involuntary_move = false;
         }
 
         private void NewTurn()
@@ -33,41 +32,37 @@ namespace wump76
             Console.WriteLine("Bats moved you to room "+loc);
         }
 
-        private int IntearctWithRoom()
+        private GameState HandleRoomInteraction()
         {
             int loc = _gc.map.GetPlayerLocation();
-            int game_state = 0; // 0= game continues; -1=game lost; +1= game won; 
-            
             if (_gc.InteractWithBats(loc))
             {
                 Console.WriteLine("ZAP! Suffer Bat Snatch! Elsewhereville for you!");
                 ShowBatMoveLocation();
-                game_state = IntearctWithRoom();
-
-                // exit out of function since we don't need to handle any other hazards in room player was moved out of
-                // game_state will depend on what happens in the new room player was moved involuntarily to
-                return game_state;
+                // call recursively to handle involuntary move to new room  
+                // exit immediately after as we don't need to handle any other hazards in room player was just moved out of
+                return HandleRoomInteraction(); 
             }
             if (_gc.DoesRoomHavePit(loc))
             {
                 Console.WriteLine("YYYIIIIEEEE... You fell in a pit!");
-                Console.WriteLine("Ha, Ha, Ha - You loose!");
-                game_state = -1;
-                return game_state;
+                return GameState.Loose;
             }
             if (_gc.map.IsWumpusInRoom(loc))
             {
                 Console.WriteLine("You entered room with the Wunpus!");
                 if(_gc.DoesWumpusMove())
+                {
                     Console.WriteLine("LUCKY! Wumpus was startled and moved to nearby room!");
+                    return GameState.Continue;
+                }
                 else
                 {
-                    Console.WriteLine("He, He Wumpus food, You Loose!");
-                    game_state = -1;
+                    Console.WriteLine("Your are Wumpus food!");
+                    return GameState.Loose;
                 } 
-                return game_state;
             }
-            return game_state;
+            return GameState.Continue;
         }
 
         private void ShowConnectingRooms()
@@ -101,23 +96,46 @@ namespace wump76
             return GetInput();
         }
 
-        private void ShowRoomState()
-        {
-
-        }
-
         private void HandleMoveAction()
         {
             Console.Write("Where to? ");
             int loc=Convert.ToInt32(GetInput());
-            while (!_gc.MovePlayer(loc))
+            while (_gc.MovePlayer(loc)==ActionResult.Invalid)
             {
                 Console.WriteLine("Cant move to "+loc+", try again");
                 Console.Write("Where to? ");
                 loc=Convert.ToInt32(GetInput());
             }
-           
         }
+
+        private GameState HandleShootAction()
+        {
+            Console.Write("Aim Where? ");
+            int loc=Convert.ToInt32(GetInput());
+            ActionResult result = _gc.ShootAction(loc);
+            if (result==ActionResult.Invalid)
+            {
+                Console.WriteLine("You can't shoot into room "+loc+", try again");
+                return GameState.Continue;
+            }
+            else if (result==ActionResult.KilledWumpus)
+            {
+                Console.WriteLine("Aargh... you shot the wumpus!");
+                return GameState.Win;
+            }
+            else if (result==ActionResult.NoArrowsLeft) 
+            {
+                Console.WriteLine("Ha, Ha - you've run out of arrows, Wumpus will get you!");
+                return GameState.Loose;
+            }
+            else //ActionResult.Done
+            {
+                Console.WriteLine("You missed! Wumpus is not in room "+loc);
+                Console.WriteLine("You have "+_gc.GetArrowsLeft()+" arrows left");
+            }
+            return GameState.Continue;
+        }
+
         public void Start() 
         {
             Console.WriteLine();
@@ -128,21 +146,36 @@ namespace wump76
                 ShowPlayerLocation();
                 
                 string answer;
-                if (_is_involuntary_move) answer="m";
-                else answer=GetUserAction();
-
+                GameState state = GameState.Continue; 
+                answer=GetUserAction();
                 if (answer=="q")
                 {  
                     Console.WriteLine("HA - quitter! run along, then!");
+                    Console.WriteLine("");
                     break;
                 }
                 else if (answer=="m")
+                {
                     HandleMoveAction();
+                    state = HandleRoomInteraction();
+                }
+                else if (answer=="s")
+                    state=HandleShootAction();
                 else 
                     Console.WriteLine("Can't do that, try again");
-                int game_state = IntearctWithRoom();
-                if (game_state!=0) // indicates game has been won or lost, so exit
+                if (state==GameState.Win) // exit loop if  game has been won or lost
+                {
+                    Console.WriteLine("You Won! Wumpus will get you next time!");
+                    Console.WriteLine("");
                     break;
+                }
+                else if (state==GameState.Loose)
+                {
+                    Console.WriteLine("Ha, Ha, Ha - You Loose!");
+                    Console.WriteLine("");
+                    break;
+                }
+                
             }
         }
 
@@ -187,6 +220,5 @@ The Wumpus lives in a cave of 20 rooms. Each room has 3 tunnels leading to other
     PIT    - 'I feel a draft'");
         }
         private GameControl _gc; // game controler
-        private bool _is_involuntary_move; // used to check if user was involuntarily moved to a new room by bats
     }
 }

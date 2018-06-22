@@ -7,8 +7,8 @@ namespace wump76
         private int[][] _connections;
         private int _wumpus;
         private int _player;
-        private int _bats;
-        private int _pits;
+        private int[] _bats;
+        private int[] _pits;
         public int MAX_ROOM; 
         
         public Map()
@@ -25,8 +25,8 @@ namespace wump76
                 };
             _wumpus = 6;
             _player = 0;
-            _bats = 3;
-            _pits = 5;
+            _bats = new int[] {3, 4};
+            _pits = new int[] {5};
             MAX_ROOM = _connections.Length-1;
         }
 
@@ -42,18 +42,32 @@ namespace wump76
         
         public bool IsBatInRoom(int room)
         {
-            return (_bats==room);
+            foreach (int bat in _bats)
+                if (bat==room)
+                    return true;
+            return false;
         }
 
         public bool IsPitInRoom(int room)
         {
-            return (_pits==room);
+            foreach (int p in _pits)
+                if (p==room)
+                    return true;
+            return false;
         }
         
         public bool IsPlayerNearPit()
         {
              foreach (int room in GetConnectingRooms(_player)) 
-               if (_pits==room) return true;
+               if (IsPitInRoom(room))
+                   return true;
+            return false;
+        }
+
+        public bool IsConnectingRoom(int some_room)
+        {
+            foreach (int room in GetConnectingRooms(_player)) 
+               if (some_room==room) return true;
             return false;
         }
 
@@ -67,7 +81,7 @@ namespace wump76
         public bool IsPlayerNearBat()
         {
             foreach (int room in GetConnectingRooms(_player)) 
-                if (_bats==room) return true;
+                if (IsBatInRoom(room)) return true;
             return false;
         }
 
@@ -98,7 +112,7 @@ namespace wump76
 
         private int[] GetConnectingRooms(int room) 
         {
-            if (room>=_connections.Length)
+            if (room>MAX_ROOM || room<0)
                 return new int[0]; // invalid room; no connections
             return _connections[room];
         }

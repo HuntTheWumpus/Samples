@@ -2,23 +2,37 @@ using System;
 
 namespace wump76
 {
+    public enum ActionResult {Done, Invalid, NoArrowsLeft, FellInPit, EatenByWumpus, KilledWumpus};
+
+    public enum GameState {Continue, Win, Loose};
+
     public class GameControl
     {
         public Map map; // public member map
         private Random rand; //random nubmer generator used for game interactions
 
+        private int _arrows;
+
         public GameControl()
         {
             map = new Map();
             rand = new Random();
+            _arrows = 5;
         }
 
-        public bool MovePlayer(int room)
+        public ActionResult MovePlayer(int room)
         {
-            foreach (int connecting_room in map.GetConnectingRooms())
-                if (room==connecting_room) 
-                    return map.MovePlayer(room);
-            return false;
+            if (map.IsConnectingRoom(room))
+            { 
+                map.MovePlayer(room);
+                return ActionResult.Done;
+            }
+            return ActionResult.Invalid;
+        }
+
+        public int GetArrowsLeft()
+        {
+            return _arrows;
         }
 
         private bool MoveWumpus()
@@ -29,14 +43,35 @@ namespace wump76
             return map.MoveWumpus(connecting_rooms[rand_idx]);
         }
 
+        public ActionResult ShootAction(int loc)
+        {
+            if (!map.IsConnectingRoom(loc))
+                return ActionResult.Invalid;
+
+            _arrows = _arrows-1;
+
+            //shot found the wumpus
+            if (map.IsWumpusInRoom(loc))
+                return ActionResult.KilledWumpus;
+            
+            //shot missed the wumpus, and player is out of arrows
+            if (_arrows==0)
+                return ActionResult.NoArrowsLeft;
+            
+            return ActionResult.Done;
+        }
 
         public bool InteractWithBats(int room)
         {
             if (map.IsBatInRoom(room))
             {
                 int new_room = rand.Next(map.MAX_ROOM);
+                //Console.WriteLine("DEBUG: room "+new_room+" of "+map.MAX_ROOM);
                 while (new_room==room)
-                    new_room = rand.Next(map.MAX_ROOM); // handle unlikely event of random seleciton = current room one or more times! 
+                {
+                    new_room = rand.Next(map.MAX_ROOM); // handle unlikely event of picking current room one or more times! 
+                    //Console.WriteLine("DEBUG: room "+new_room+" of "+map.MAX_ROOM);
+                }
                 map.MovePlayer(new_room);
                 return true;
             }
